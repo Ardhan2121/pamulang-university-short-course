@@ -7,103 +7,120 @@ const alertContainer = document.getElementById("alert-container");
 
 const AVALANCHE_FUJI_CHAIN_ID = "0xa869";
 
-let walletConnected = false;
-
 function formatAvaxBalance(balanceWei) {
-  const balance = parseInt(balanceWei, 16);
-  return (balance / 1e18).toFixed(4) + " AVAX";
+  return (Number(balanceWei) / 1e18).toFixed(4) + " AVAX";
 }
 
 function showAlert(message, type = "success") {
   const alert = document.createElement("div");
   alert.className = `alert ${type}`;
-
-  const icon = type === "success" ? "✓" : "✕";
-
   alert.innerHTML = `
-    <span class="alert-icon">${icon}</span>
+    <span class="alert-icon">${type === "success" ? "✓" : "✕"}</span>
     <span class="alert-message">${message}</span>
   `;
-
   alertContainer.appendChild(alert);
+  setTimeout(() => alert.remove(), 3000);
+}
 
-  setTimeout(() => {
-    alert.style.animation = "fadeOut 0.3s ease-out";
-    setTimeout(() => {
-      alert.remove();
-    }, 300);
-  }, 3000);
+function resetUI() {
+  statusEl.textContent = "Not connected";
+  addressEl.textContent = "-";
+  networkEl.textContent = "-";
+  balanceEl.textContent = "-";
+  connectBtn.textContent = "Connect Wallet";
+  connectBtn.disabled = false;
+}
+
+async function loadNetwork() {
+  const chainId = await window.ethereum.request({ method: "eth_chainId" });
+
+  if (chainId !== AVALANCHE_FUJI_CHAIN_ID) {
+    networkEl.textContent = "Wrong Network";
+    statusEl.textContent = "Please switch to Avalanche Fuji";
+    balanceEl.textContent = "-";
+    return false;
+  }
+
+  networkEl.textContent = "Avalanche Fuji Testnet";
+  return true;
+}
+
+async function loadBalance(address) {
+  const balanceWei = await window.ethereum.request({
+    method: "eth_getBalance",
+    params: [address, "latest"],
+  });
+
+  balanceEl.textContent = formatAvaxBalance(balanceWei);
 }
 
 async function connectWallet() {
-  if (typeof window.ethereum === "undefined") {
-    showAlert(
-      "Core Wallet tidak terdeteksi. Silakan install Core Wallet.",
-      "error"
-    );
+  if (!window.ethereum) {
+    showAlert("Core Wallet tidak terdeteksi", "error");
     return;
   }
 
   try {
-    statusEl.textContent = "Connecting...";
-    connectBtn.textContent = "Connecting...";
-
     const accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
 
+    if (!accounts.length) {
+      resetUI();
+      return;
+    }
+
     const address = accounts[0];
     addressEl.textContent = address.slice(0, 6) + "..." + address.slice(-4);
 
-    const chainId = await window.ethereum.request({
-      method: "eth_chainId",
-    });
+    const ok = await loadNetwork();
+    if (!ok) return;
 
-    if (chainId === AVALANCHE_FUJI_CHAIN_ID) {
-      networkEl.textContent = "Avalanche Fuji Testnet";
-      statusEl.textContent = "Connected";
-      connectBtn.textContent = "Connected";
-      connectBtn.disabled = true;
+    await loadBalance(address);
 
-      const balanceWei = await window.ethereum.request({
-        method: "eth_getBalance",
-        params: [address, "latest"],
-      });
-
-      balanceEl.textContent = formatAvaxBalance(balanceWei);
-      showAlert("Wallet berhasil terhubung!", "success");
-      walletConnected = true;
-    } else {
-      networkEl.textContent = "Wrong Network";
-      statusEl.textContent = "Please switch to Avalanche Fuji";
-      balanceEl.textContent = "-";
-      connectBtn.textContent = "Connect Wallet";
-      showAlert("Silakan ganti network ke Avalanche Fuji Testnet", "error");
-    }
-  } catch (error) {
-    console.error(error);
-    statusEl.textContent = "Not connected";
-    connectBtn.textContent = "Connect Wallet";
-    showAlert("Koneksi gagal. Silakan coba lagi.", "error");
+    statusEl.textContent = "Connected";
+    connectBtn.textContent = "Connected";
+    connectBtn.disabled = true;
+  } catch {
+    resetUI();
+    showAlert("Gagal connect wallet", "error");
   }
+}
+
+async function autoConnect() {
+  if (!window.ethereum) return;
+
+  const accounts = await window.ethereum.request({
+    method: "eth_accounts",
+  });
+
+  if (!accounts.length) return;
+
+  const address = accounts[0];
+  addressEl.textContent = address.slice(0, 6) + "..." + address.slice(-4);
+
+  const ok = await loadNetwork();
+  if (!ok) return;
+
+  await loadBalance(address);
+
+  statusEl.textContent = "Connected";
+  connectBtn.textContent = "Connected";
+  connectBtn.disabled = true;
 }
 
 connectBtn.addEventListener("click", connectWallet);
 
 if (window.ethereum) {
-  window.ethereum.on("chainChanged", () => {
-    walletConnected &&
-      showAlert(
-        "Mendeteksi perubahan network. Silakan refresh halaman.",
-        "error"
-      );
+  window.ethereum.on("accountsChanged", () => {
+    resetUI();
+    autoConnect();
   });
 
-  window.ethereum.on("accountsChanged", () => {
-    walletConnected &&
-      showAlert(
-        "Mendeteksi perubahan wallet. Silakan refresh halaman.",
-        "error"
-      );
+  window.ethereum.on("chainChanged", () => {
+    resetUI();
+    autoConnect();
   });
 }
+
+autoConnect();
