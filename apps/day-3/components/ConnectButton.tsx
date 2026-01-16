@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 
@@ -6,8 +7,26 @@ interface ConnectButtonProps {
 }
 
 export function ConnectButton({ isConnected }: ConnectButtonProps) {
-  const { connect, isPending: isConnecting } = useConnect();
-  const { disconnect } = useDisconnect();
+  const { connect, isPending: isConnecting } = useConnect({
+    mutation: {
+      onError(error) {
+        toast.error(error.message);
+      },
+      onSuccess() {
+        toast.success("Wallet connected");
+      },
+    },
+  });
+  const { disconnect } = useDisconnect({
+    mutation: {
+      onError(error) {
+        toast.error(error.message);
+      },
+      onSuccess() {
+        toast.success("Wallet disconnected");
+      },
+    },
+  });
 
   if (!isConnected) {
     return (

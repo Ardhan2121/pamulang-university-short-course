@@ -3,6 +3,7 @@
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { avalancheFuji } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { injected } from "wagmi/connectors";
 
 const queryClient = new QueryClient();
 
