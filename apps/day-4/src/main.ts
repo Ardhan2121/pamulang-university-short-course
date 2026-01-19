@@ -5,6 +5,10 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: '*',
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Avalanche Simple Full Stack dApp')
     .setDescription('Nama Lengkap: Ardhan Novealdio, NIM: 241011401771')

@@ -5,16 +5,26 @@ import { WalletInfo } from "@/components/WalletInfo";
 import { StorageControl } from "@/components/StorageControl";
 import { ConnectButton } from "@/components/ConnectButton";
 import { useState, useEffect } from "react";
+import {
+  getBlockchainValue,
+  getBlockchainEvents,
+} from "@/services/blockchain.service";
 
 export default function Page() {
   const { address, isConnected, chain } = useAccount();
   const [mounted, setMounted] = useState(false);
+  const [blockchainValue, setBlockchainValue] = useState<any>(null);
+  const [blockchainEvents, setBlockchainEvents] = useState<any>(null);
+
   const { data: balanceData } = useBalance({
     address: address,
   });
 
   useEffect(() => {
     setMounted(true);
+    // Fetch blockchain data on client side
+    getBlockchainValue().then(setBlockchainValue).catch(console.error);
+    getBlockchainEvents().then(setBlockchainEvents).catch(console.error);
   }, []);
 
   if (!mounted) {
@@ -31,11 +41,11 @@ export default function Page() {
         backgroundSize: "cover",
       }}
     >
-      <div className="flex flex-col items-center w-full px-8 py-10">
+      <div className="flex flex-col items-center w-full px-8 py-10 overflow-y-auto max-h-screen">
         <img src="/avax.png" alt="logo" className="w-[55px] mb-[44px]" />
 
-        <div className="card w-[350px] min-h-[380px] p-[33.6px] bg-[#1f1f1f] rounded-[30px] border border-[#4d4d4d] flex flex-col shadow-2xl">
-          <h5 className="text-[28px] tracking-[-1%] font-medium mb-[30px]">
+        <div className="card w-[350px]  p-[33.6px] bg-[#1f1f1f] rounded-[30px] border border-[#4d4d4d] flex flex-col shadow-2xl space-y-6 h-fit">
+          <h5 className="text-[28px] tracking-[-1%] font-medium mb-[10px]">
             {isConnected ? "DApp Dashboard" : "Connect Wallet"}
           </h5>
 
@@ -48,6 +58,30 @@ export default function Page() {
             />
 
             <StorageControl isConnected={isConnected} />
+
+            {/* Blockchain Data Section */}
+
+            <div className="flex flex-col gap-2 p-4 bg-[#2a2a2a] rounded-xl border border-[#4d4d4d]">
+              <h6 className="text-sm font-semibold text-[#cccccc]">
+                Blockchain Data
+              </h6>
+              <div className="text-xs">
+                <span className="text-[#888888]">Value: </span>
+                <span className="text-white font-mono">
+                  {blockchainValue
+                    ? JSON.stringify(blockchainValue, null, 2)
+                    : "Loading..."}
+                </span>
+              </div>
+              <div className="text-xs">
+                <span className="text-[#888888]">Events: </span>
+                <span className="text-white font-mono">
+                  {blockchainEvents
+                    ? JSON.stringify(blockchainEvents, null, 2)
+                    : "Loading..."}
+                </span>
+              </div>
+            </div>
 
             <ConnectButton isConnected={isConnected} />
 
