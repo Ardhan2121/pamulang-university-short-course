@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Wallet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="alert-container"></div>
+
+    <div class="container">
+        <div class="main-wrapper">
+            <img src="assets/avax.png" alt="logo" class="app-logo">
+
+            <div class="card">
+                <h5 class="card-title">Connect Wallet</h5>
+                <div>
+                    <div class="card-info card-balance">
+                        <span>Balance</span>
+                        <div class="value-wrapper">
+                            <img src="assets/avax.png" alt="avax" width="24px">
+                            <span class="value" id="balance">-</span>
+                        </div>
+                    </div>
+                    <div class="card-info card-details">
+                        <div class="detail-row">
+                            <span>Wallet Address</span>
+                            <span class="detail-value" id="address">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Network Name</span>
+                            <span class="detail-value" id="network">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Status</span>
+                            <span class="detail-value" id="status">Not Connected</span>
+                        </div>
+                    </div>
+                    <button id="connect-wallet">Connect Wallet</button>
+                    <div class="author">
+                        <span>Ardhan Novealdio - 241011401771</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
